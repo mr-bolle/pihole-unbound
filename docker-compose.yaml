@@ -1,0 +1,72 @@
+# https://github.com/chriscrowe/docker-pihole-unbound
+
+version: '2'
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole-unbound
+    mac_address: d0:ca:ab:cd:ef:01
+#     cap_add: # Uncomment if you want to use Pi-Hole for DHCP
+#       - NET_ADMIN
+    ports:
+      # - 443/tcp
+      - 53/tcp
+      - 53/udp
+#       - 67/udp # Uncomment if you want to use Pi-Hole for DHCP
+      - 80:80/tcp
+      # - 22/tcp
+    environment:
+      ServerIP: 192.168.178.5   # macvlan Host IP pihole
+      WEBPASSWORD: ""  # ${WEBPASSWORD}
+      DNS1: 192.168.178.6
+      DNS2: 192.168.178.13
+#      ip: 192.168.178.5
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./pihole/volume:/etc/pihole:rw
+      - ./pihole/config/hosts:/etc/hosts:ro
+      - ./pihole/config/resolv.conf:/etc/resolv.conf:ro
+      - ./pihole/config/dnsmasq.conf:/etc/dnsmasq.d/02-network.conf:ro
+      - ./pihole/config/pihole-FTL.conf:/etc/pihole/pihole-FTL.conf:ro
+    networks:
+      home:
+        ipv4_address: 192.168.178.5   # macvlan Host IP pihole
+    restart: always
+  unbound:
+    container_name: unbound
+    image: mvance/unbound-rpi:latest   ## für x386 mvance/unbound
+    hostname: syn-unbound
+    mac_address: d0:ca:ab:cd:ef:02
+    ports:
+      - 53/tcp
+      - 53/udp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./unbound-config:/opt/unbound/etc/unbound  # unbound config
+    networks:
+      home:
+        ipv4_address: 192.168.178.6   # macvlan Host IP unbound
+    restart: always
+
+# dieses netzwerk wird beim start automatisch erstellt    
+# $ docker network create --driver=macvlan --gateway=192.168.178.1 --subnet=192.168.178.0/24 -o parent=eth0 home
+
+# docker network create -d macvlan \
+# --subnet=192.168.178.0/24 \
+# --gateway=192.168.178.1 \
+# -o parent=eth0 home
+
+networks:
+  home:
+    driver: macvlan
+    driver_opts:
+      parent: eth0  # Host Network Interface
+    ipam:
+      config:
+        - subnet: 192.168.178.0/24
+          gateway: 192.168.178.1
+          ip_range: 192.168.178.5/30
