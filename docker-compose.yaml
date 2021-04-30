@@ -15,14 +15,13 @@ services:
       - 53/tcp
       - 53/udp
 #       - 67/udp # Uncomment if you want to use Pi-Hole for DHCP
-      - 80:80/tcp
-      # - 22/tcp
+      - 80/tcp
+      - 22/tcp
     environment:
       ServerIP: 192.168.178.5   # macvlan Host IP pihole
       WEBPASSWORD: ""  # ${WEBPASSWORD}
       DNS1: 192.168.178.6
       DNS2: 192.168.178.13
-#      ip: 192.168.178.5
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
