@@ -45,7 +45,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ./unbound-config:/opt/unbound/etc/unbound  # unbound config
+      - unbound-config:/opt/unbound/etc/unbound  # unbound config
     networks:
       home:
         ipv4_address: 192.168.178.6   # macvlan Host IP unbound
@@ -67,5 +67,8 @@ networks:
     ipam:
       config:
         - subnet: 192.168.178.0/24
-          gateway: 192.168.178.1
+          gateway: 192.168.178.1  # Router IP
           ip_range: 192.168.178.5/30
+
+volumes:
+  unbound-config:
